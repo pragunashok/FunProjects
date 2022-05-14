@@ -1,0 +1,165 @@
+
+//THIS CODE IS INTENDED FOR BLUEJ IDE
+import java.util.*;
+import java.util.Random;
+import java.util.Arrays;
+
+class Bottle{
+    int colours[] = new int [4];
+    int top=-1;
+    Bottle(int a,int b, int c, int d){
+        this.push(a);
+        this.push(b);
+        this.push(c);
+        this.push(d);
+    }
+    boolean isFull(){
+        return (this.top==3);
+    }
+    boolean isEmpty(){
+        return (this.top==-1);
+    }
+    boolean isComplete(){
+        
+        if(this.colours[0]==0) return false;
+        for(int i=1;i<this.colours.length;i++){
+            if(this.colours[i]!=this.colours[0]){
+                return false;
+            }
+        }
+        return true;
+    }
+    public static String getColour(int a){
+        switch(a){
+            case 0:return "-------";
+            case 1:return "--red--";
+            case 2:return "--blue-";
+            case 3:return "-yellow";
+            case 4:return "-green-";
+            case 5:return "-brown-";
+            case 6:return "-purple";
+            default:return "-------";
+        }
+    }
+    void displayBottle(){
+        if(this.isComplete()) System.out.println("-XXXXX-");
+        else System.out.println("+-----+");
+        for(int i=3;i>=0;i--) System.out.println(getColour(this.colours[i]));
+        System.out.println("+-----+");
+    }
+    void push(int a){
+        if(a==0)return;
+        if(this.isFull()){
+            System.out.println(" Invalid Destination ");
+            return;
+        }
+        this.top++;
+        this.colours[top]=a;
+            
+    
+    }
+    void pop(){
+        if(this.isEmpty())return;
+        this.colours[top]=0;
+        top--;
+        return;
+    }
+}
+
+public class BottleGame
+{
+    static boolean isFinished(Bottle [] obj){
+        for(int i=0;i<obj.length-1;i++){
+            if((!obj[i].isComplete())||(!obj[i].isEmpty())) return false;
+        }
+        return true;
+    }
+    
+    static void displayAll(Bottle [] obj){
+        for(int i=0;i<obj.length;i++){
+            if(obj[i].isComplete()) System.out.print((i+1)+"XXXXX-");
+            else System.out.print((i+1) + "-----+");   
+            System.out.print("   ");
+        }
+        System.out.println();
+        for(int j=3;j>=0;j--){
+            for(int i=0;i<obj.length;i++){
+                System.out.print(obj[i].getColour(obj[i].colours[j]));
+                System.out.print("   ");            
+                
+            }
+            System.out.println();
+        }
+        for(int i=0;i<obj.length;i++){
+            System.out.print("+-----+   ");
+        }
+        System.out.println();
+    }
+    static void move(int a,int b, Bottle [] obj){
+        a--;
+        b--;
+        if(obj[a].isEmpty() || obj[b].isFull()){
+            System.out.println("\nIllegal Move");
+            return;
+        }
+        int x = obj[a].colours[obj[a].top];
+        obj[a].pop();
+        obj[b].push(x);
+    }
+    
+    static void rand( int array[], int a){
+        Random rd = new Random();
+        for (int i = a-1; i > 0; i--) {
+            int j = rd.nextInt(i+1);
+            int temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+    public static void main (String [] args){
+        Scanner in = new Scanner(System.in);
+        Bottle[] obj;
+        int n,a,b,j=1;
+        System.out.println("\n\n\n");
+        System.out.println("Enter the number of bottles for the game");
+        n= in.nextInt();
+        int[] setup= new int [(4*(n-1))];
+        for(int i=0;i<setup.length;){
+            setup[i]=j;
+            setup[i+1]=j;
+            setup[i+2]=j;
+            setup[i+3]=j;
+            i+=4;       //This For loop makes an array of the typ 111122223333444
+            j++;        //the array is used to setup the puzzle
+        }
+        
+        obj= new Bottle[n];
+        for(int i=0;i<n;i++){
+            obj[i]= new Bottle(0,0,0,0);//Initialising all the bottles as empty
+        }
+        rand(setup, setup.length);
+        for(int i=0;i<setup.length;i++) System.out.print(setup[i]+" ");
+        System.out.println();
+        for(int i=0;i<setup.length;i++){
+            obj[i%n].push(setup[i]);
+        }
+        //GAME SETUP COMPLETE
+        
+        
+        
+        while(!isFinished(obj)){
+            System.out.print('\u000C');
+            displayAll(obj);
+            System.out.println("\n Enter where to move from ");
+            a = in.nextInt();
+            System.out.println("\n Enter where to move to ");
+            b = in.nextInt();
+            move(a,b,obj);
+            //displayAll(obj);
+        }
+        
+        if(isFinished(obj)) System.out.println(" GAME OVER ");
+    }
+
+    
+}
