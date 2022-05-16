@@ -1,6 +1,8 @@
 //NOTE : This code is Intended for BlueJ java IDE
 // Author : Pragun Ashok
 // Tetris Game in Java Console
+// Version 1
+//This Version Still has a lot of bugs, comment if you find any bugs
 import java.util.*;
 import java.lang.*;
 import java.awt.*;
