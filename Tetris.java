@@ -18,11 +18,13 @@ class Piece{// every piece has 4 blocks
     char type; // type can be A/B/C/D/E/F/G, each type signifies a different kind of piece
 }
 
-public class Tetris implements KeyListener{
+public class Tetris extends JFrame implements KeyListener{
     static final int startx=5,starty=17;//The coordinates where a new piece is spawned
     static char grid[][] = new char [10][20];//the tetris grid
     static Piece ActivePiece=new Piece();//ActivePiece refers to the piece that is currently floating, and has not reached the bottom yet
     static Piece PieceOnHold = newPiece(0);//this is the piece thats on hold
+    static boolean GameOver = false;
+    static int Tetris=0;
     //Hold is a storage space that can store 1 piece.
     //if the player encounters a piece that they dont wanna use, they can put it in hold, and then hold will be full
     
@@ -31,7 +33,7 @@ public class Tetris implements KeyListener{
     {
         System.out.print('\u000C');
     }
-    static void display(char[][]grid)
+    static void display()
     {//function to display the grid,hold,and score
         clrscr();
         System.out.print("+");
@@ -47,12 +49,19 @@ public class Tetris implements KeyListener{
                 else System.out.print(grid[i][j]);
             }
             System.out.print("|");
-            if(j==19){
+            if(j==19)
                 System.out.print("      Hold : "+PieceOnHold.type);
+            if(j==11 && GameOver())
+                System.out.print("      GAME OVER");
+            if(j==10)
+                System.out.print("      Score : "+score);
+            if(j==2){
+                if(Tetris>0){
+                    System.out.print("      TETRIS!!!!");
+                    Tetris--;
+                }
             }
-            if(j==10){
-                System.out.print("      Score : "+score);          
-            }
+                
             System.out.println();
         }
         System.out.print("+");
@@ -223,22 +232,22 @@ public class Tetris implements KeyListener{
         return obj;
     }
     
-    static void clearGrid(Piece obj, char [][] grid){//This doesnt actually clear the whole grid, just clears active piece
+    static void clearGrid(){//This doesnt actually clear the whole grid, just clears active piece
         for(int i=0;i<4;i++){                        // This method is used to temporarily suspend the active piece, while it moves\rotates etc
-            grid[obj.x[i]][obj.y[i]]='x';            
+            grid[ActivePiece.x[i]][ActivePiece.y[i]]='x';            
         }    
     }
-    static void updateGrid(Piece obj, char [][] grid){//Function to update the grid after every move
+    static void updateGrid(){//Function to update the grid after every move
         for(int i=0;i<4;i++){
-            grid[obj.x[i]][obj.y[i]]=obj.type;
+            grid[ActivePiece.x[i]][ActivePiece.y[i]]=ActivePiece.type;
         }
     }
-    static boolean isBlockedRight(Piece obj,char[][]grid){//check whether the ActivePiece has free space on its right
+    static boolean isBlockedRight(){//check whether the ActivePiece has free space on its right
         boolean a = false;
         char x;
         for(int i=0;i<4;i++){
-            x=grid[obj.x[i]+1][obj.y[i]];
-            if(x!='x'&&x!=obj.type){
+            x=grid[ActivePiece.x[i]+1][ActivePiece.y[i]];
+            if(x!='x'&&x!=ActivePiece.type){
                 return true;
             }
         }
@@ -246,12 +255,12 @@ public class Tetris implements KeyListener{
         
         return a;
     }
-    static boolean isBlockedLeft(Piece obj,char[][]grid){//check for free space on the left of activepiece
+    static boolean isBlockedLeft(){//check for free space on the left of activepiece
         boolean a = false;
         char x;
         for(int i=0;i<4;i++){
-            x=grid[obj.x[i]-1][obj.y[i]];
-            if(x!='x'&&x!=obj.type){
+            x=grid[ActivePiece.x[i]-1][ActivePiece.y[i]];
+            if(x!='x'&&x!=ActivePiece.type){
                 return true;
             }
         }
@@ -259,57 +268,63 @@ public class Tetris implements KeyListener{
         
         return a;
     }
-    static boolean isAtBottom(Piece obj,char [][] grid){//check whether the active piece has reached the bottom, or has landed on top of another piece
+    static boolean isAtBottom(){//check whether the active piece has reached the bottom, or has landed on top of another piece
         boolean a=false;
         char x;
         for(int i=0;i<4;i++){
-            if(obj.y[i]==0){
+            if(ActivePiece.y[i]==0){
                 return true;
             }
         }
         for(int i=0;i<4;i++){
-            x=grid[obj.x[i]][obj.y[i]-1];
-            if(x!='x'&&x!=obj.type){
+            x=grid[ActivePiece.x[i]][ActivePiece.y[i]-1];
+            if(x!='x'&&x!=ActivePiece.type){
                 return true;
             }
         }
         return a;
     }
-    
-    static void moveDown(Piece obj, char [][] grid){//move active piece one step down
-        if(isAtBottom(obj,grid)) return;
-        clearGrid(obj,grid);
-        for(int i=0;i<4;i++){
-            obj.y[i]--;
+    static boolean GameOver(){
+        int j = 16;
+        for(int i=0;i<10;i++){
+            if(grid[i][j]!='x'&& Character.isLowerCase(grid[i][j]))return true;    
         }
-        updateGrid(obj,grid);
+        return false;
     }
-    public static void moveLeft(Piece obj, char [][] grid){//move to the left
-        if(isBlockedLeft(obj,grid)){return;}
+    static void moveDown(){//move active piece one step down
+        if(isAtBottom()) return;
+        clearGrid();
         for(int i=0;i<4;i++){
-            if(obj.x[i]==0) return;
+            ActivePiece.y[i]--;
         }
-        clearGrid(obj,grid);
-        for(int i=0;i<4;i++){
-            obj.x[i]--;
-        }
-        updateGrid(obj,grid);
+        updateGrid();
     }
-    public static void moveRight(Piece obj, char [][] grid){//Function to move the active Piece one space to the right
-        if(isBlockedRight(obj,grid)){return;}
+    public static void moveLeft(){//move to the left
+        if(isBlockedLeft()){return;}
         for(int i=0;i<4;i++){
-            if(obj.x[i]==9) return;
+            if(ActivePiece.x[i]==0) return;
         }
-        clearGrid(obj,grid);
+        clearGrid();
         for(int i=0;i<4;i++){
-            obj.x[i]++;
+            ActivePiece.x[i]--;
         }
-        updateGrid(obj,grid);
+        updateGrid();
+    }
+    public static void moveRight(){//Function to move the active Piece one space to the right
+        if(isBlockedRight()){return;}
+        for(int i=0;i<4;i++){
+            if(ActivePiece.x[i]==9) return;
+        }
+        clearGrid();
+        for(int i=0;i<4;i++){
+            ActivePiece.x[i]++;
+        }
+        updateGrid();
     }
     static void Hold(){//function to exchange the active piece with the hold piece
                         // if hold is empty, active piece is just a new random piece
         Random rand = new Random();
-        clearGrid(ActivePiece,grid);
+        clearGrid();
         if(PieceOnHold.type=='0'){
             PieceOnHold = newPiece(ActivePiece.type);
             ActivePiece = newPiece(rand.nextInt(8));
@@ -321,95 +336,40 @@ public class Tetris implements KeyListener{
         
         
     }
-    public static void Rotate(Piece obj, char [][] grid){//function to rotate activepiece clockwise
+    public static void Rotate(){//function to rotate activepiece clockwise
         int temp;
-        int x,y;
-        clearGrid(obj,grid);
-        for(int i=1;i<4;i++){
-            x=obj.x[i]-obj.x[0];
-            y=obj.y[i]-obj.y[0];
-            switch(x){
-                case -2:switch(y){
-                            case -2:x=-2;y=2;
-                                    break;
-                            case -1:x=-1;y=2;
-                                    break;
-                            case 0: x=0;y=2;
-                                    break;
-                            case 1: x=1;y=2;
-                                    break;
-                            case 2: x=2;y=2;
-                                    break;
-                            default:
-                        }
-                        break;
-                case -1:switch(y){
-                            case -2:x=-2;y=1;
-                                    break;
-                            case -1:x=-1;y=1;
-                                    break;
-                            case 0:x=0;y=1;
-                                    break;
-                            case 1:x=1;y=1;
-                                    break;
-                            case 2:x=2;y=1;
-                                    break;
-                            default:
-                        }
-                        break;
-                
-                case 0: switch(y){
-                            case -2:x=-2;y=0;
-                                    break;
-                            case -1:x=-1;y=0;
-                                    break;
-                            case 0:x=0;y=0;
-                                    break;
-                            case 1:x=1;y=0;
-                                    break;
-                            case 2:x=2;y=0;
-                                    break;
-                            default:
-                        }
-                        break;
-                        
-                case 1: switch(y){
-                            case -2:x=-2;y=-1;
-                                    break;
-                            case -1:x=-1;y=-1;
-                                    break;
-                            case 0:x=0;y=-1;
-                                    break;
-                            case 1:x=1;y=-1;
-                                    break;
-                            case 2:x=2;y=-1;
-                                    break;
-                            default:
-                        }
-                        break;
-                case 2: switch(y){
-                            case -2:x=-2;y=-2;
-                                    break;
-                            case -1:x=-1;y=-2;
-                                    break;
-                            case 0:x=0;y=-2;
-                                    break;
-                            case 1:x=1;y=-2;
-                                    break;
-                            case 2:x=2;y=-2;
-                                    break;
-                            default:
-                        }
-                        break;
-                
-                default:
-            }
-            obj.x[i]=obj.x[0]+x;
-            obj.y[i]=obj.y[0]+y;
+        int[] x = new int[4];
+        int[] y = new int[4];
+        clearGrid();
+        for(int i=0;i<4;i++){
+            x[i]=ActivePiece.x[i]-ActivePiece.x[0];
+            y[i]=ActivePiece.y[i]-ActivePiece.y[0];
+            temp=x[i];
+            x[i]=y[i];
+            y[i]=(-1)*temp;
+            
+            
+            x[i]=ActivePiece.x[0]+x[i];
+            y[i]=ActivePiece.y[0]+y[i];
         }
-        updateGrid(obj,grid);
+        for(int i=0;i<4;i++){
+            if(x[i]<0){
+                for(int j=0;j<4;j++)x[j]++;
+                i=0;
+            }
+            
+            if(x[i]>9){
+                for(int j=0;j<4;j++)x[j]--;
+                i=0;
+            }
+        }
+        for(int i=0;i<4;i++){
+            ActivePiece.x[i]=x[i];
+            ActivePiece.y[i]=y[i];
+        }
+        updateGrid();
     }
-    public static void checkForCompletion(char[][] grid){//this function checks the grid to see if there are any completed rows
+    public static void checkForCompletion(){//this function checks the grid to see if there are any completed rows
         int count=0;                // and it deletes the row if it is full
         for(int j=0;j<20;j++){
             boolean flag = true;
@@ -438,10 +398,11 @@ public class Tetris implements KeyListener{
             case 3: score+=9000;// 3 rows filled in the same move
                     break;
             case 4: score+=16000;// 4 rows
+                    Tetris=2;
             default:
         }
     }
-    public static void Solidify(char[][]grid){//this function is called whenever active piece reaches bottom
+    public static void Solidify(){//this function is called whenever active piece reaches bottom
         for(int i=0;i<10;i++){
             for(int j=0;j<20;j++){
                 if(grid[i][j]!='x'){
@@ -451,7 +412,10 @@ public class Tetris implements KeyListener{
         }// so what this function does is it converts the characters to lower case, so that when 
         //when the active piece changes, the finishedpieces are retained
     }
-    
+    public void paint(Graphics g){
+        g.drawLine(20,40,100,90);
+        g.drawRect(20,150,60,50);
+    }
     public static void main(String [] args){
         Scanner in = new Scanner(System.in);
         Random rand = new Random();
@@ -483,59 +447,81 @@ public class Tetris implements KeyListener{
         }
         
         int delay = 1000;
-        display(grid);
-        while(true){
-            while(!isAtBottom(ActivePiece,grid)){    
+        display();
+        while(!GameOver()){
+            while(!isAtBottom()){    
                 try{
                     Thread.sleep(delay);   
                 }catch(Exception e){
                     
                 }
-                moveDown(ActivePiece,grid);
-                display(grid);
+                moveDown();
+                display();
             }
             try{
                 Thread.sleep(delay/3);   
             }catch(Exception e){
                     
             }
-            checkForCompletion(grid);
-            Solidify(grid);
+            checkForCompletion();
+            Solidify();
             ActivePiece = newPiece(rand.nextInt(8));
-            delay-=5;//decremening the delay, so that the game gets faster as you play
+            frame.repaint();
+            delay-=15;//decremening the delay, so that the game gets faster as you play
         }
+        display();
+        if(GameOver) return;
     }
     public void keyTyped(KeyEvent e){//keyboard input
         char x = e.getKeyChar();
         switch(x){
             case 'a':
-                    moveLeft(ActivePiece,grid);
-                    display(grid);
+                    moveLeft();
                     break;
-                    
             case 'd':
-                    moveRight(ActivePiece,grid);
-                    display(grid);
+                    moveRight();
                     break;
             case 's':
-                    moveDown(ActivePiece,grid);
+                    moveDown();
                     score+=14;
-                    display(grid);
                     break;
             case 'r':
-                    Rotate(ActivePiece,grid);
-                    display(grid);
+                    Rotate();
                     break;
             case 'h':
                     Hold();
-                    display(grid);
             default:
+                    int Key= e.getKeyCode();
+                    switch(Key){
+                        case KeyEvent.VK_LEFT:
+                            moveLeft();
+                            break;
+                        case KeyEvent.VK_RIGHT:
+                            moveRight();
+                            break;
+                        case KeyEvent.VK_DOWN:
+                            moveDown();
+                            break;
+                        case KeyEvent.VK_A:
+                            moveLeft();
+                            break;
+                        case KeyEvent.VK_S:
+                            moveDown();
+                            break;
+                        case KeyEvent.VK_D:
+                            moveRight();
+                            break;
+                        case KeyEvent.VK_R:
+                            Rotate();
+                            break;
+                        case KeyEvent.VK_H:
+                            Hold();
+                            break;
+                        default:
+                    }
         }
+        display();
     }
-    public void keyPressed(KeyEvent e){
-        
-    }
-    public void keyReleased(KeyEvent e){
-        
-    }
+    public void keyPressed(KeyEvent e){}
+    public void keyReleased(KeyEvent e){}
 }
