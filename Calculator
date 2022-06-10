@@ -1,0 +1,191 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+public class Calculator implements ActionListener
+{
+    JFrame frame;
+    JTextField textfield;
+    JButton[] numberButtons = new JButton[10];
+    JButton[] functionButtons = new JButton[8];
+    JButton addButton,subButton,mulButton,divButton;
+    JButton decButton,equButton,delButton,clrButton;
+    JPanel panel;
+    Font myFont = new Font("Arial",Font.PLAIN,20);
+    String expression = new String();
+    double num1=0,num2=0,result=0;
+    char operator;
+    Calculator(){
+        frame = new JFrame("Calculator");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(420,550);
+        frame.setLayout(null);
+        
+        expression = "";
+        textfield = new JTextField();
+        textfield.setBounds(50,25,300,50);
+        textfield.setFont(myFont);
+        textfield.setEditable(false);
+        
+        addButton = new JButton("+");
+        subButton = new JButton("-");
+        mulButton = new JButton("*");
+        divButton = new JButton("/");
+        decButton = new JButton(".");
+        equButton = new JButton("=");
+        delButton = new JButton("Del");
+        clrButton = new JButton("Clr");
+        
+        functionButtons[0]= addButton;
+        functionButtons[1]= subButton;
+        functionButtons[2]= mulButton;
+        functionButtons[3]= divButton;
+        functionButtons[4]= decButton;
+        functionButtons[5]= equButton;
+        functionButtons[6]= delButton;
+        functionButtons[7]= clrButton;
+        
+        for(int i=0;i<8;i++){
+            functionButtons[i].addActionListener(this);
+            functionButtons[i].setFont(myFont);
+            functionButtons[i].setFocusable(false);
+        }
+        for(int i=0;i<10;i++){
+            numberButtons[i] = new JButton(Character.toString('0'+i));
+            numberButtons[i].setFont(myFont);
+            numberButtons[i].addActionListener(this);
+            numberButtons[i].setFocusable(false);
+        }
+        functionButtons[6].setBounds(50,410,145,50);
+        functionButtons[7].setBounds(205,410,145,50);
+        panel = new JPanel();
+        panel.setBounds(50,100,300,300);
+        panel.setLayout(new GridLayout(4,4,10,10));
+        panel.setBackground(Color.GRAY);
+        panel.add(numberButtons[1]);
+        panel.add(numberButtons[2]);
+        panel.add(numberButtons[3]);
+        panel.add(functionButtons[0]);
+        panel.add(numberButtons[4]);
+        panel.add(numberButtons[5]);
+        panel.add(numberButtons[6]);
+        panel.add(functionButtons[1]);
+        panel.add(numberButtons[7]);
+        panel.add(numberButtons[8]);
+        panel.add(numberButtons[9]);
+        panel.add(functionButtons[2]);
+        panel.add(functionButtons[4]);
+        panel.add(numberButtons[0]);
+        panel.add(functionButtons[3]);
+        panel.add(functionButtons[5]);
+        frame.add(panel);
+        frame.add(functionButtons[6]);
+        frame.add(functionButtons[7]);
+        
+        
+        frame.add(textfield);
+        frame.setVisible(true);
+    }
+    
+    public static void main(String[] args){
+        Calculator calc = new Calculator();
+        
+    }
+    public boolean isArithmeticOperator(char a){
+        if(a=='/'||a=='*'||a=='+'||a=='-'){
+            return true;
+        }else{return false;}
+    }
+    public void Solve(String S){
+        double op1=0.0,op2=0.0;
+        int next,prev;
+        for(int i=0;i<S.length();i++){
+            if(isArithmeticOperator(S.charAt(i))){
+                int x = i;
+                while(true){     
+                    if((x+1)<S.length()){
+                        
+                        if(S.charAt(x+1)>='0' && S.charAt(x+1)<='9'  ){
+                            if(x+1>=S.length()){break;}
+                            x++;
+                        }else{break;}
+                    }else{break;}
+                }
+                op2 = Double.parseDouble(S.substring(i+1,x+1));
+                
+                x = i;
+                while(true){     
+                    if(x-1>0){
+                        
+                        if(S.charAt(x-1)>='0' && S.charAt(x-1)<='9'){
+                            x--;
+                        }else{break;}
+                    }else{break;}
+                }
+                op1 = Double.parseDouble(S.substring(x-1,i));
+            }
+        }
+        
+        System.out.println("Operand 1 :"+op1);
+        System.out.println("Operand 2 :"+op2);
+        
+    }
+    public void actionPerformed(ActionEvent e){
+        
+
+        
+        
+        for(int i=0;i<10;i++){
+            if(e.getSource() == numberButtons[i]){
+                expression = expression.concat(String.valueOf(i));
+                textfield.setText(expression);
+                //System.out.println(expression);
+                //textfield.setText(textfield.getText().concat(String.valueOf(i)));
+            }
+        }
+        for(int i=0;i<8;i++){
+            if(e.getSource() == functionButtons[i]){
+                char operator = ' ';
+                switch(i){
+                    case 0:
+                        operator = '+';
+                        expression = expression.concat(Character.toString(operator));
+                        textfield.setText(expression);
+                        break;
+                    case 1:
+                        operator = '-';
+                        expression = expression.concat(Character.toString(operator));
+                        textfield.setText(expression);
+                        break;
+                    case 2:
+                        operator = '*';
+                        expression = expression.concat(Character.toString(operator));
+                        textfield.setText(expression);
+                        break;
+                    case 3:
+                        operator = '/';
+                        expression = expression.concat(Character.toString(operator));
+                        textfield.setText(expression);
+                        break;
+                    case 4:
+                        operator = '.';
+                        expression = expression.concat(Character.toString(operator));
+                        textfield.setText(expression);
+                        break;
+                    case 5:
+                        Solve(expression);
+                        break;
+                    case 6:
+                        expression = expression.substring(0,expression.length()-1);
+                        textfield.setText(expression);
+                        break;
+                    case 7:
+                        expression = "";
+                        textfield.setText(expression);
+                        break;
+                }
+                
+            }
+        }
+        
+    }
+}
