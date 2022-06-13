@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.Math.*;
+
 public class Calculator implements ActionListener
 {
     JFrame frame;
@@ -8,22 +10,29 @@ public class Calculator implements ActionListener
     JButton[] numberButtons = new JButton[10];
     JButton[] functionButtons = new JButton[8];
     JButton[] coolerButtons = new JButton [4];
-    JButton[] trigButtons = new JButton[6];
+    JButton[] trigButtons = new JButton[7];
     
     JButton addButton,subButton,mulButton,divButton;
     JButton decButton,equButton,delButton,clrButton;
-    JButton openBrace,closeBrace;
+    JButton openBrace,closeBrace,powButton,sqrtButton;
     JButton sinButton,cosButton,tanButton,secButton,cscButton,cotButton;
-    
+    JButton degradButton;
+    JLabel degradLabel;
     JPanel panel,panel2,panel3;
     Font myFont = new Font("Arial",Font.PLAIN,20);
+    Font smallerFont = new Font("Arial",Font.PLAIN,15);
     String expression = new String();
+    
+    final double pi = 3.141592653589793238462643383279502884197169399375105820974944;
+    boolean degrad = true;
     double num1=0,num2=0;
     char operator;
+    int bracketDepth = 0;
     Calculator(){
         frame = new JFrame("Calculator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600,550);
+        frame.setSize(650,550);
+        frame.setResizable(false);
         frame.setLayout(null);
         
         expression = "";
@@ -32,6 +41,10 @@ public class Calculator implements ActionListener
         textfield.setFont(myFont);
         textfield.setEditable(true);
         
+        degradLabel = new JLabel();
+        degradLabel.setText("On For Degrees");
+        degradLabel.setFont(smallerFont);
+        degradLabel.setBounds(50,75,150,20);
         addButton = new JButton("+");
         subButton = new JButton("-");
         mulButton = new JButton("*");
@@ -53,23 +66,14 @@ public class Calculator implements ActionListener
         
         openBrace = new JButton("(");
         closeBrace = new JButton(")");
+        powButton = new JButton("^");
+        sqrtButton = new JButton("sqrt");
         
         coolerButtons[0] = openBrace;
         coolerButtons[1] = closeBrace;
+        coolerButtons[2] = powButton;
+        coolerButtons[3] = sqrtButton;
         
-        for(int i=0;i<8;i++){
-            functionButtons[i].addActionListener(this);
-            functionButtons[i].setFont(myFont);
-            functionButtons[i].setFocusable(false);
-        }
-        for(int i=0;i<10;i++){
-            numberButtons[i] = new JButton(Character.toString('0'+i));
-            numberButtons[i].setFont(myFont);
-            numberButtons[i].addActionListener(this);
-            numberButtons[i].setFocusable(false);
-        }
-        functionButtons[6].setBounds(50,410,145,50);
-        functionButtons[7].setBounds(205,410,145,50);
         
         sinButton = new JButton("sin");
         cosButton = new JButton("cos");
@@ -77,12 +81,46 @@ public class Calculator implements ActionListener
         secButton = new JButton("sec");
         cotButton = new JButton("cot");
         cscButton = new JButton("cosec");
+        degradButton = new  JButton("Deg/Rad");
+        
         trigButtons[0]=sinButton;
         trigButtons[1]=cscButton;
         trigButtons[2]=cosButton;
         trigButtons[3]=secButton;
         trigButtons[4]=tanButton;
         trigButtons[5]=cotButton;
+        trigButtons[6]=degradButton;
+        trigButtons[6].setBounds(450,230,150,25);
+        
+        
+        
+        for(int i=0;i<8;i++){
+            functionButtons[i].addActionListener(this);
+            functionButtons[i].setFont(myFont);
+            functionButtons[i].setFocusable(false);
+        }
+        functionButtons[6].setBounds(50,410,145,50);
+        functionButtons[7].setBounds(205,410,145,50);
+        
+        for(int i=0;i<10;i++){
+            numberButtons[i] = new JButton(Character.toString('0'+i));
+            numberButtons[i].setFont(myFont);
+            numberButtons[i].addActionListener(this);
+            numberButtons[i].setFocusable(false);
+        }
+        
+        for(int i=0;i<7;i++){
+            trigButtons[i].addActionListener(this);
+            trigButtons[i].setFocusable(false);
+        }
+        
+        
+        for(int i=0;i<4;i++){
+            coolerButtons[i].addActionListener(this);
+            coolerButtons[i].setFocusable(false);
+            coolerButtons[i].setFont(myFont);
+        }
+        
         
         
         
@@ -109,14 +147,15 @@ public class Calculator implements ActionListener
         
         
         panel2 = new JPanel();
-        panel2.setBounds(360,100,50,300);
+        panel2.setBounds(360,100,80,300);
         panel2.setBackground(Color.RED);
         panel2.setLayout(new GridLayout(4,1,10,10));
-        panel2.add(coolerButtons[0]);
-        panel2.add(coolerButtons[1]);
+        for(int i=0;i<4;i++){
+            panel2.add(coolerButtons[i]);
+        }
         
         panel3 = new JPanel();
-        panel3.setBounds(420,100,150,120);
+        panel3.setBounds(450,100,150,120);
         panel3.setBackground(Color.GREEN);
         panel3.setLayout(new GridLayout(3,2,10,10));
         for(int i=0;i<6;i++){
@@ -129,7 +168,9 @@ public class Calculator implements ActionListener
         frame.add(functionButtons[7]);
         frame.add(panel2);
         frame.add(panel3);
+        frame.add(trigButtons[6]);
         frame.add(textfield);
+        frame.add(degradLabel);
         frame.setVisible(true);
     }
     
@@ -142,6 +183,37 @@ public class Calculator implements ActionListener
             return true;
         }else{return false;}
     }
+    public double sin(double a){
+        if(degrad){
+            return Math.sin((a)*(pi/180));    
+        }else{
+            return Math.sin(a);    
+        }
+        
+    }
+    public double cosec(double a){
+        return (1/(sin(a)));
+    }
+    public double cos(double a){
+        if(degrad){
+            return Math.cos((a)*(pi/180));
+        }else{
+            return Math.cos(a);
+        }
+    }
+    public double sec(double a){
+        return(1/(cos(a)));
+    }
+    public double tan(double a){
+        if(degrad){
+            return Math.tan((a)*(pi/180));
+        }else{
+            return Math.tan(a);
+        }    
+    }
+    public double cot(double a){
+        return (1/(tan(a)));
+    }
     public String Operation (String S, char operator){
         double op1=0.0,op2=0.0;
         String Sop1= new String();
@@ -151,9 +223,8 @@ public class Calculator implements ActionListener
             if(S.charAt(i)== operator){
                 int x = i;
                 while(true){
-                    
                     if((x+1)<S.length()){
-                        
+                        if(S.charAt(x+1)=='-'){x++;}
                         if((S.charAt(x+1)>='0' && S.charAt(x+1)<='9')){
                             if(x>=S.length()){break;}
                             x++;
@@ -172,16 +243,23 @@ public class Calculator implements ActionListener
                 while(true){     
                     if(y-1>0){
                         
-                        if((S.charAt(y-2)>='0' && S.charAt(y-2)<='9')|| S.charAt(y-2)=='.'){
+                        if((S.charAt(y-2)>='0' && S.charAt(y-2)<='9')|| S.charAt(y-2)=='.' ){
                             y--;
                         }else{break;}
                     }else{break;}
                 }
-                Sop1 = S.substring(y-1,i);
+                if(y==0){Sop1=S.substring(y,i);}else{Sop1 = S.substring(y-1,i);}
+                
                 System.out.println("Operand 1 :"+Sop1);
-                op1 = Double.parseDouble(Sop1);
+                try{
+                    op1 = Double.parseDouble(Sop1);
+                }catch(Exception e){
+                    return S;    
+                }
                 double op3 =0.0;
                 switch (operator){
+                    case '^': op3 = Math.pow(op1,op2);
+                        break;
                     case '/': op3 = op1/op2;
                         break;
                     case '*': op3 = op1*op2;
@@ -193,7 +271,7 @@ public class Calculator implements ActionListener
                 }
                 StringBuffer buf = new StringBuffer(S);
                 buf.replace(y-1,x+1,(""+op3));
-                
+                System.out.println("result : "+op3);
                 S=buf.toString();
                 break;
                    
@@ -202,50 +280,169 @@ public class Calculator implements ActionListener
         
         return S;    
     }
-    public void Solve(String S){
-        double op1=0.0,op2=0.0;
+    public String Solve(String expres){
+        double op1=0.0,op2=0.0,op3=0.0;
         String Sop1= new String();
         String Sop2= new String();
-        int next,prev;
         String result = new String();
+        StringBuffer buf = new StringBuffer(expres);
+        String S = expres;
         
         result = "";
+        
+        
+        while(S.contains("sin")){
+            int x = S.indexOf("sin");
+            int y = x;
+            while(S.charAt(y) != ')'){
+                y++;
+            }
+            System.out.println(" x: "+x+"  y: "+y);
+            Sop1= S.substring(x+4,y);
+            op1 = Double.parseDouble(Sop1);
+            System.out.println("op1  : "+op1);
+            op2 = sin(op1);
+            op3 = Math.round(op2*1000000)/1000000.0;
+            buf.replace(x,y+1,(""+op3));
+            S = buf.toString();
+            
+        }
+        while(S.contains("cosec")){
+            int x = S.indexOf("cosec");
+            int y = x;
+            while(S.charAt(y) != ')'){
+                y++;
+            }
+            System.out.println(" x: "+x+"  y: "+y);
+            Sop1= S.substring(x+6,y);
+            op1 = Double.parseDouble(Sop1);
+            System.out.println("op1  : "+op1);
+            op2 = cosec(op1);
+            op3 = Math.round(op2*1000000)/1000000.0;
+            buf.replace(x,y+1,(""+op3));
+            S = buf.toString();
+            
+        }
+        while(S.contains("cos")){
+            int x = S.indexOf("cos");
+            int y = x;
+            while(S.charAt(y) != ')'){
+                y++;
+            }
+            System.out.println(" x: "+x+"  y: "+y);
+            Sop1= S.substring(x+4,y);
+            op1 = Double.parseDouble(Sop1);
+            System.out.println("op1  : "+op1);
+            op2 = cos(op1);
+            op3 = Math.round(op2*1000000)/1000000.0;
+            buf.replace(x,y+1,(""+op3));
+            S = buf.toString();
+            
+        }
+        while(S.contains("sec")){
+            int x = S.indexOf("sec");
+            int y = x;
+            while(S.charAt(y) != ')'){
+                y++;
+            }
+            System.out.println(" x: "+x+"  y: "+y);
+            Sop1= S.substring(x+4,y);
+            op1 = Double.parseDouble(Sop1);
+            System.out.println("op1  : "+op1);
+            op2 = sec(op1);
+            op3 = Math.round(op2*1000000)/1000000.0;
+            buf.replace(x,y+1,(""+op3));
+            S = buf.toString();
+            
+        }
+        while(S.contains("cot")){
+            int x = S.indexOf("cot");
+            int y = x;
+            while(S.charAt(y) != ')'){
+                y++;
+            }
+            System.out.println(" x: "+x+"  y: "+y);
+            Sop1= S.substring(x+4,y);
+            op1 = Double.parseDouble(Sop1);
+            System.out.println("op1  : "+op1);
+            op2 = cot(op1);
+            op3 = Math.round(op2*1000000)/1000000.0;
+            buf.replace(x,y+1,(""+op3));
+            S = buf.toString();
+            
+        }
+        while(S.contains("tan")){
+            int x = S.indexOf("tan");
+            int y = x;
+            while(S.charAt(y) != ')'){
+                y++;
+            }
+            System.out.println(" x: "+x+"  y: "+y);
+            Sop1= S.substring(x+4,y);
+            op1 = Double.parseDouble(Sop1);
+            System.out.println("op1  : "+op1);
+            op2 = tan(op1);
+            op3 = Math.round(op2*1000000)/1000000.0;
+            buf.replace(x,y+1,(""+op3));
+            S = buf.toString();
+            
+        }
+        for(int i=0;i<S.length();i++){
+            if(S.charAt(i)=='('){
+                bracketDepth++;
+                int bDepth = bracketDepth;
+                int y = i;
+                while(bracketDepth>0){
+                    if(S.charAt(y)==')'){
+                        bracketDepth--;
+                    }
+                    
+                    y++;
+                }
+                System.out.println("Substring : "+S.substring(i+1,y));
+                Sop1 = Solve(S.substring(i+1,y));
+                
+                buf.replace(i,y+1,Sop1);
+                S = buf.toString();
+                System.out.println(" String : "+S);
+            }
+        }
+        for(int i=0;i<S.length();i++){
+            if(S.charAt(i)=='^'){
+                S = Operation(S,'^');
+            }
+            
+        }
+        
         for(int i=0;i<S.length();i++){
             if(S.charAt(i)=='/'){
                 S = Operation(S,'/');
             }
-            expression = S;
-            textfield.setText(expression);
+            
         }
         for(int i=0;i<S.length();i++){
             if(S.charAt(i)=='*'){
                 S = Operation(S,'*');
             }
-            expression = S;
-            textfield.setText(expression);
+            
         }
         for(int i=0;i<S.length();i++){
             if(S.charAt(i)=='+'){
                 S = Operation(S,'+');
             }
-            expression = S;
-            textfield.setText(expression);
         }
         for(int i=0;i<S.length();i++){
             if(S.charAt(i)=='-'){
                 S = Operation(S,'-');
             }
-            expression = S;
-            textfield.setText(expression);
+            
         }
-        
-        return;
-        //return result;
+        //expression = S;
+        //textfield.setText(S);
+        //return;
+        return S;
     }
     public void actionPerformed(ActionEvent e){
-        
-
-        
         
         for(int i=0;i<10;i++){
             if(e.getSource() == numberButtons[i]){
@@ -253,6 +450,7 @@ public class Calculator implements ActionListener
                 textfield.setText(expression);
                 //System.out.println(expression);
                 //textfield.setText(textfield.getText().concat(String.valueOf(i)));
+                return;
             }
         }
         for(int i=0;i<8;i++){
@@ -262,46 +460,96 @@ public class Calculator implements ActionListener
                     case 0:
                         operator = '+';
                         expression = expression.concat(Character.toString(operator));
-                        textfield.setText(expression);
                         break;
                     case 1:
                         operator = '-';
                         expression = expression.concat(Character.toString(operator));
-                        textfield.setText(expression);
                         break;
                     case 2:
                         operator = '*';
                         expression = expression.concat(Character.toString(operator));
-                        textfield.setText(expression);
                         break;
                     case 3:
                         operator = '/';
                         expression = expression.concat(Character.toString(operator));
-                        textfield.setText(expression);
                         break;
                     case 4:
                         operator = '.';
                         expression = expression.concat(Character.toString(operator));
-                        textfield.setText(expression);
                         break;
                     case 5:
                         expression = textfield.getText();
-                        Solve(expression);
+                        expression = Solve(expression);
                         break;
                     case 6:
                         expression = expression.substring(0,expression.length()-1);
-                        textfield.setText(expression);
                         break;
                     case 7:
                         expression = "";
-                        textfield.setText(expression);
                         break;
                     default:
                         
                 }
-                
+                textfield.setText(expression);
+                return;
             }
         }
-        
+        for(int i=0;i<4;i++){
+            if(e.getSource() == coolerButtons[i]){
+                switch(i){
+                    case 0:
+                        expression = expression.concat("(");
+                        break;
+                    case 1:
+                        expression = expression.concat(")");
+                        break;
+                    case 2:
+                        expression = expression.concat("^");
+                        break;
+                    case 3:
+                        expression = expression.concat("sqrt(");
+                        break;
+                    default:
+                }
+                textfield.setText(expression);
+                return;
+            }
+        }
+        for(int i=0;i<7;i++){
+            if(e.getSource() == trigButtons[i]){
+                switch(i){
+                    case 0:
+                        expression = expression.concat("sin(");
+                        break;
+                    case 1:
+                        expression = expression.concat("cosec(");
+                        break;
+                    case 2:
+                        expression = expression.concat("cos(");
+                        break;
+                    case 3:
+                        expression = expression.concat("sec(");
+                        break;
+                    case 4:
+                        expression = expression.concat("tan(");
+                        break;
+                    case 5:
+                        expression = expression.concat("cot(");
+                        break;
+                    case 6:
+                        if(degrad){
+                            degrad =  false;
+                            degradLabel.setText("On For Radians");
+                        }else{
+                            degrad = true;
+                            degradLabel.setText("On For Degrees");
+                        }
+                        break;
+                    default:
+                }
+                textfield.setText(expression);
+                return;
+            }
+        }
     }
 }
